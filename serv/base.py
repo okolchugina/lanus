@@ -6,8 +6,12 @@ import bluetooth
 log = logging.getLogger(__name__)
 
 
-class BTServer:
+def _get_address() -> str:
+    """Достает адрес девайса"""
+    return bluetooth.read_local_bdaddr()[0]
 
+
+class BTServer:
     socket = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 
     @property
@@ -15,7 +19,9 @@ class BTServer:
         return import_module('config.lotus')
 
     def bind(self):
-        self.socket.bind(getattr(self.config, 'PORT', 1))
+        addr = _get_address()
+        port = getattr(self.config, 'PORT', 1)
+        self.socket.bind((addr, port))
 
     def listen(self):
         self.socket.listen(1)
@@ -29,7 +35,7 @@ class BTServer:
             log.info(f'connected client: {ip}:{port}')
 
             try:
-                #TODO заменить на работу с приложением
+                # TODO заменить на работу с приложением
                 data = client.recv(1024)
                 print("received [%s]" % data)
 
@@ -39,5 +45,3 @@ class BTServer:
                 break
 
         self.socket.close()
-
-
